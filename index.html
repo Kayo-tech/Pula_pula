@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pula-Pula Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .timer-display {
+            font-family: 'Courier New', monospace;
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .bounce {
+            animation: bounce 0.5s infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-blue-100 to-purple-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-purple-800 mb-2">
+                <i class="fas fa-child-reaching text-yellow-500 bounce"></i> 
+                Pula-Pula Manager
+                <i class="fas fa-child-reaching text-yellow-500 bounce"></i>
+            </h1>
+            <p class="text-gray-600">Gerencie o pula-pula de forma fácil e divertida!</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Formulário de cadastro -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-purple-700 mb-4">
+                    <i class="fas fa-user-plus mr-2"></i>Adicionar Pessoa
+                </h2>
+                
+                <form id="personForm" class="space-y-4">
+                    <div>
+                        <label for="name" class="block text-gray-700 mb-1">Nome da Criança:</label>
+                        <input type="text" id="name" required 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Tempo no Pula-Pula:</label>
+                        <div class="flex space-x-4">
+                            <button type="button" id="5min" 
+                                class="flex-1 bg-purple-100 hover:bg-purple-200 text-purple-800 font-medium py-2 px-4 rounded-lg border border-purple-300 transition duration-200">
+                                10 minutos - R$ 03,00
+                            </button>
+                            <button type="button" id="10min" 
+                                class="flex-1 bg-purple-100 hover:bg-purple-200 text-purple-800 font-medium py-2 px-4 rounded-lg border border-purple-300 transition duration-200">
+                                20 minutos - R$ 05,00
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="hidden" id="customTimeSection">
+                        <label for="customTime" class="block text-gray-700 mb-1">Tempo Personalizado (minutos):</label>
+                        <input type="number" id="customTime" min="1" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    </div>
+                    
+                    <div>
+                        <label for="paymentMethod" class="block text-gray-700 mb-1">Forma de Pagamento:</label>
+                        <select id="paymentMethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 mb-2">
+                            <option value="cash">Dinheiro</option>
+                            <option value="pix">PIX</option>
+                            <option value="credit">Cartão de Crédito</option>
+                            <option value="debit">Cartão de Débito</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="amountPaid" class="block text-gray-700 mb-1">Valor Pago (R$):</label>
+                        <input type="number" id="amountPaid" step="0.01" min="0" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    </div>
+                    
+                    <div class="pt-2">
+                        <button type="submit" 
+                            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md">
+                            <i class="fas fa-plus-circle mr-2"></i>Adicionar ao Pula-Pula
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg hidden" id="changeInfo">
+                    <h3 class="font-medium text-gray-800 mb-2">Informações de Pagamento:</h3>
+                    <p class="text-gray-600">Valor Total: R$ <span id="totalAmount">0.00</span></p>
+                    <p class="text-gray-600">Troco: R$ <span id="changeAmount">0.00</span></p>
+                </div>
+            </div>
+            
+            <!-- Lista de pessoas no pula-pula -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-purple-700 mb-4">
+                    <i class="fas fa-users mr-2"></i>Pessoas no Pula-Pula
+                </h2>
+                
+                <div class="mb-4 flex justify-between items-center">
+                    <p class="text-gray-600">Total: <span id="totalPeople" class="font-bold">0</span> pessoa(s)</p>
+                    <p class="text-gray-600">Faturamento: R$ <span id="totalRevenue" class="font-bold">0.00</span></p>
+                </div>
+                
+                <div class="space-y-4" id="peopleList">
+                    <div class="text-center py-8 text-gray-400" id="emptyMessage">
+                        <i class="fas fa-child text-4xl mb-2"></i>
+                        <p>Nenhuma pessoa no pula-pula ainda</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function getPaymentMethodName(method) {
+                const methods = {
+                    'cash': 'Dinheiro',
+                    'pix': 'PIX',
+                    'credit': 'Cartão Crédito',
+                    'debit': 'Cartão Débito'
+                };
+                return methods[method] || method;
+            }
+            // Variáveis globais
+            let people = [];
+            let totalRevenue = 0;
+            
+            // Elementos do formulário
+            const form = document.getElementById('personForm');
+            const nameInput = document.getElementById('name');
+            const customTimeSection = document.getElementById('customTimeSection');
+            const customTimeInput = document.getElementById('customTime');
+            const amountPaidInput = document.getElementById('amountPaid');
+            const changeInfo = document.getElementById('changeInfo');
+            const totalAmountSpan = document.getElementById('totalAmount');
+            const changeAmountSpan = document.getElementById('changeAmount');
+            
+            // Elementos da lista
+            const peopleList = document.getElementById('peopleList');
+            const emptyMessage = document.getElementById('emptyMessage');
+            const totalPeopleSpan = document.getElementById('totalPeople');
+            const totalRevenueSpan = document.getElementById('totalRevenue');
+            
+            // Botões de tempo
+            const fiveMinBtn = document.getElementById('5min');
+            const tenMinBtn = document.getElementById('10min');
+            
+            // Variáveis para controle do tempo selecionado
+            let selectedTime = 0;
+            let selectedPrice = 0;
+            
+            // Event listeners para os botões de tempo
+            fiveMinBtn.addEventListener('click', function() {
+                selectedTime = 10;
+                selectedPrice = 3;
+                updatePriceDisplay();
+                customTimeSection.classList.add('hidden');
+                fiveMinBtn.classList.add('bg-purple-300', 'border-purple-500');
+                tenMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
+            });
+            
+            tenMinBtn.addEventListener('click', function() {
+                selectedTime = 20;
+                selectedPrice = 5;
+                updatePriceDisplay();
+                customTimeSection.classList.add('hidden');
+                tenMinBtn.classList.add('bg-purple-300', 'border-purple-500');
+                fiveMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
+            });
+            
+            // Event listener para o campo de valor pago
+            amountPaidInput.addEventListener('input', updatePriceDisplay);
+            
+            // Função para atualizar a exibição do preço e troco
+            function updatePriceDisplay() {
+                if (selectedTime > 0) {
+                    // Se estiver editando, usar o preço existente como padrão
+                    const editingPerson = people.find(p => p.isEditing);
+                    const basePrice = editingPerson ? editingPerson.price : selectedPrice;
+                    
+                    totalAmountSpan.textContent = basePrice.toFixed(2);
+                    
+                    const amountPaid = parseFloat(amountPaidInput.value) || (editingPerson ? editingPerson.amountPaid : 0);
+                    const change = amountPaid - basePrice;
+                    
+                    changeAmountSpan.textContent = change >= 0 ? change.toFixed(2) : '0.00';
+                    changeInfo.classList.remove('hidden');
+                }
+            }
+            
+            // Event listener para o formulário
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (selectedTime === 0) {
+                    alert('Por favor, selecione um tempo no pula-pula');
+                    return;
+                }
+                
+                const name = nameInput.value.trim();
+                if (!name) {
+                    alert('Por favor, insira um nome');
+                    return;
+                }
+                
+                const amountPaid = parseFloat(amountPaidInput.value) || 0;
+                if (amountPaid < selectedPrice) {
+                    alert(`Valor pago insuficiente. O valor mínimo é R$ ${selectedPrice.toFixed(2)}`);
+                    return;
+                }
+                
+                // Criar nova pessoa
+                const newPerson = {
+                    id: Date.now(),
+                    name: name,
+                    time: selectedTime * 60, // em segundos
+                    remainingTime: selectedTime * 60,
+                    price: selectedPrice,
+                    paymentMethod: document.getElementById('paymentMethod').value,
+                    amountPaid: amountPaid,
+                    timer: null,
+                    isPaused: false,
+                    isEditing: false,
+                    originalPrice: selectedPrice
+                };
+                
+                people.push(newPerson);
+                updatePeopleList();
+                calculateRevenue();
+                calculateRevenue();
+                
+                // Resetar formulário
+                form.reset();
+                selectedTime = 0;
+                selectedPrice = 0;
+                fiveMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
+                tenMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
+                customTimeSection.classList.add('hidden');
+                changeInfo.classList.add('hidden');
+            });
+            
+            // Função para atualizar a lista de pessoas
+            function updatePeopleList() {
+                if (people.length === 0) {
+                    emptyMessage.classList.remove('hidden');
+                    peopleList.innerHTML = '';
+                    peopleList.appendChild(emptyMessage);
+                    totalPeopleSpan.textContent = '0';
+                    return;
+                }
+                
+                emptyMessage.classList.add('hidden');
+                totalPeopleSpan.textContent = people.length;
+                
+                // Preserve existing elements to avoid flickering
+                const existingElements = {};
+                peopleList.querySelectorAll('[data-id]').forEach(el => {
+                    existingElements[el.dataset.id] = el;
+                });
+                
+                const fragment = document.createDocumentFragment();
+                
+                people.forEach(person => {
+                    let personElement = existingElements[person.id];
+                    const minutes = Math.floor(person.remainingTime / 60);
+                    const seconds = person.remainingTime % 60;
+                    
+                    if (!personElement) {
+                        personElement = document.createElement('div');
+                        personElement.className = 'bg-gray-50 rounded-lg p-4 border border-gray-200';
+                        personElement.dataset.id = person.id;
+                    
+                        personElement.innerHTML = `
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-lg text-purple-800">${person.name}</h3>
+                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">
+                                R$ ${person.price.toFixed(2)}
+                            </span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="timer-display text-2xl font-mono">
+                                ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}
+                            </div>
+                            
+                            <div class="flex space-x-2">
+                                <button class="timer-control px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition" data-action="start">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="timer-control px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition" data-action="pause">
+                                    <i class="fas fa-pause"></i>
+                                </button>
+                                <button class="add-time px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition" data-minutes="10">
+                                    +10 min
+                                </button>
+                                <button class="remove-person px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="text-sm text-gray-600">
+                            <p>Pago: R$ ${person.amountPaid.toFixed(2)} (${getPaymentMethodName(person.paymentMethod)}) | Troco: R$ ${(person.amountPaid - person.price).toFixed(2)}</p>
+                        </div>
+                        <div class="flex justify-end mt-2">
+                            <button class="edit-person px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </div>
+                    `;
+                    
+                        // Adicionar event listeners aos botões
+                        const timerControlBtns = personElement.querySelectorAll('.timer-control');
+                        timerControlBtns.forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const action = this.dataset.action;
+                                handleTimerControl(person.id, action);
+                            });
+                        });
+                        
+                        const addTimeBtn = personElement.querySelector('.add-time');
+                        addTimeBtn.addEventListener('click', function() {
+                            const minutesToAdd = parseInt(this.dataset.minutes);
+                            addTime(person.id, minutesToAdd);
+                        });
+                        
+                        const removeBtn = personElement.querySelector('.remove-person');
+                        removeBtn.addEventListener('click', function() {
+                            removePerson(person.id);
+                        });
+                        
+                        const editBtn = personElement.querySelector('.edit-person');
+                        editBtn.addEventListener('click', function() {
+                            editPerson(person.id);
+                        });
+                        
+                        // Se o timer já estiver rodando, continuar a contagem
+                        if (person.timer !== null && !person.isPaused) {
+                            startTimer(person.id);
+                        }
+                    } else {
+                        // Just update the timer display for existing elements
+                        const timerDisplay = personElement.querySelector('.timer-display');
+                        if (timerDisplay) {
+                            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        }
+                        
+                        // Update payment info
+                        const paymentInfo = personElement.querySelector('.text-sm');
+                        if (paymentInfo) {
+                            paymentInfo.innerHTML = `<p>Pago: R$ ${person.amountPaid.toFixed(2)} | Troco: R$ ${(person.amountPaid - person.price).toFixed(2)}</p>`;
+                        }
+                    }
+                    
+                    fragment.appendChild(personElement);
+                });
+                
+                peopleList.innerHTML = '';
+                peopleList.appendChild(fragment);
+            }
+            
+            // Função para controlar o timer (iniciar/pausar)
+            function handleTimerControl(id, action) {
+                const personIndex = people.findIndex(p => p.id === id);
+                if (personIndex === -1) return;
+                
+                const person = people[personIndex];
+                
+                if (action === 'start') {
+                    if (person.timer === null || person.isPaused) {
+                        startTimer(id);
+                        person.isPaused = false;
+                    }
+                } else if (action === 'pause') {
+                    if (person.timer !== null && !person.isPaused) {
+                        clearInterval(person.timer);
+                        person.isPaused = true;
+                    }
+                }
+                
+                updatePeopleList();
+            }
+            
+            // Função para iniciar o timer
+            function startTimer(id) {
+                const personIndex = people.findIndex(p => p.id === id);
+                if (personIndex === -1) return;
+                
+                const person = people[personIndex];
+                
+                if (person.timer !== null) {
+                    clearInterval(person.timer);
+                }
+                
+                person.timer = setInterval(() => {
+                    person.remainingTime--;
+                    
+                    if (person.remainingTime <= 0) {
+                        clearInterval(person.timer);
+                        person.timer = null;
+                        person.remainingTime = 0;
+                        
+                        // Adicionar efeito visual quando o tempo acabar
+                        const personElement = document.querySelector(`[data-id="${id}"]`);
+                        if (personElement) {
+                            personElement.classList.add('pulse', 'bg-red-100');
+                        }
+                    }
+                    
+                    updatePeopleList();
+                }, 1000);
+            }
+            
+            // Função para adicionar tempo
+            function addTime(id, minutes) {
+                const personIndex = people.findIndex(p => p.id === id);
+                if (personIndex === -1) return;
+                
+                const person = people[personIndex];
+                const secondsToAdd = minutes * 60;
+                
+                person.remainingTime += secondsToAdd;
+                person.time += secondsToAdd;
+                
+                // Atualizar preço
+                if (minutes === 5) {
+                    person.price += 10;
+                } else if (minutes === 10) {
+                    person.price += 15;
+                }
+                
+                updatePeopleList();
+            }
+            
+            // Função para editar pessoa
+            function editPerson(id) {
+                const personIndex = people.findIndex(p => p.id === id);
+                if (personIndex === -1) return;
+                
+                const person = people[personIndex];
+                person.isEditing = true;
+                
+                // Preencher formulário com dados da pessoa
+                nameInput.value = person.name;
+                amountPaidInput.value = person.amountPaid;
+                document.getElementById('paymentMethod').value = person.paymentMethod;
+                
+                // Configurar tempo selecionado
+                if (person.time === 300) {
+                    fiveMinBtn.click();
+                } else if (person.time === 600) {
+                    tenMinBtn.click();
+                } else {
+                    customTimeSection.classList.remove('hidden');
+                    customTimeInput.value = person.time / 60;
+                    selectedTime = person.time / 60;
+                    selectedPrice = person.price;
+                }
+                
+                // Atualizar exibição de preço
+                updatePriceDisplay();
+                
+                // Alterar texto do botão de submit
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
+                
+                // Atualizar a pessoa existente quando salvar
+                form.onsubmit = function(e) {
+                    e.preventDefault();
+                    
+                    const personIndex = people.findIndex(p => p.id === id);
+                    if (personIndex === -1) return;
+                    
+                    const person = people[personIndex];
+                    
+                    // Atualizar dados da pessoa
+                    person.name = nameInput.value.trim();
+                    person.time = selectedTime * 60;
+                    person.remainingTime = selectedTime * 60;
+                    person.price = selectedPrice;
+                    person.paymentMethod = document.getElementById('paymentMethod').value;
+                    person.amountPaid = parseFloat(amountPaidInput.value) || 0;
+                    
+                    // Resetar formulário
+                    form.reset();
+                    this.onsubmit = originalSubmitHandler;
+                    submitBtn.innerHTML = '<i class="fas fa-plus-circle mr-2"></i>Adicionar ao Pula-Pula';
+                    changeInfo.classList.add('hidden');
+                    fiveMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
+                    tenMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
+                    customTimeSection.classList.add('hidden');
+                    
+                    updatePeopleList();
+                    calculateRevenue();
+                };
+            }
+            
+            // Salvar handler original do formulário
+            const originalSubmitHandler = form.onsubmit;
+            
+            // Função para remover pessoa
+            function removePerson(id) {
+                const personIndex = people.findIndex(p => p.id === id);
+                if (personIndex === -1) return;
+                
+                const person = people[personIndex];
+                
+                if (person.timer !== null) {
+                    clearInterval(person.timer);
+                }
+                
+                people.splice(personIndex, 1);
+                updatePeopleList();
+                calculateRevenue();
+            }
+            
+            // Função para calcular o faturamento total
+            function calculateRevenue() {
+                totalRevenue = people.reduce((sum, person) => sum + person.price, 0);
+                totalRevenueSpan.textContent = totalRevenue.toFixed(2);
+            }
+            
+            // Inicialização
+            updatePeopleList();
+        });
+    </script>
+</body>
+</html>
