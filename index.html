@@ -1,121 +1,220 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pula-Pula Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#1a202c',
+                            card: '#2d3748',
+                            text: '#e2e8f0'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         .timer-display {
             font-family: 'Courier New', monospace;
         }
+
         .pulse {
             animation: pulse 2s infinite;
         }
+
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
+
         .bounce {
             animation: bounce 0.5s infinite alternate;
         }
+
         @keyframes bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-5px); }
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Toast Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        .toast-enter {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        .toast-exit {
+            animation: fadeOut 0.3s ease-out forwards;
         }
     </style>
 </head>
-<body class="bg-gradient-to-b from-blue-100 to-purple-100 min-h-screen">
+
+<body
+    class="bg-gradient-to-b from-blue-100 to-purple-100 min-h-screen transition-colors duration-300 dark:from-gray-900 dark:to-gray-800">
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
     <div class="container mx-auto px-4 py-8">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-purple-800 mb-2">
-                <i class="fas fa-child-reaching text-yellow-500 bounce"></i> 
-                Pula-Pula Manager
-                <i class="fas fa-child-reaching text-yellow-500 bounce"></i>
-            </h1>
-            <p class="text-gray-600">Gerencie o pula-pula de forma fácil e divertida!</p>
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex-1 text-center">
+                <h1 class="text-4xl font-bold text-purple-800 dark:text-purple-400 mb-2">
+                    <i class="fas fa-child-reaching text-yellow-500 bounce"></i>
+                    Pula-Pula Manager
+                    <i class="fas fa-child-reaching text-yellow-500 bounce"></i>
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400">Gerencie o pula-pula de forma fácil e divertida!</p>
+            </div>
+            <div class="absolute top-4 right-4 flex space-x-2">
+                <button id="historyBtn"
+                    class="p-2 rounded-full bg-white dark:bg-gray-700 shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                    title="Histórico">
+                    <i class="fas fa-history text-purple-600 dark:text-purple-400"></i>
+                </button>
+                <button id="darkModeToggle"
+                    class="p-2 rounded-full bg-white dark:bg-gray-700 shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                    title="Alternar Tema">
+                    <i class="fas fa-moon text-gray-600 dark:text-yellow-400"></i>
+                </button>
+            </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Formulário de cadastro -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h2 class="text-2xl font-semibold text-purple-700 mb-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-colors duration-300">
+                <h2 class="text-2xl font-semibold text-purple-700 dark:text-purple-400 mb-4">
                     <i class="fas fa-user-plus mr-2"></i>Adicionar Pessoa
                 </h2>
-                
+
                 <form id="personForm" class="space-y-4">
                     <div>
-                        <label for="name" class="block text-gray-700 mb-1">Nome da Criança:</label>
-                        <input type="text" id="name" required 
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        <label for="name" class="block text-gray-700 dark:text-gray-300 mb-1">Nome da Criança:</label>
+                        <input type="text" id="name" required
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white">
                     </div>
-                    
+
                     <div>
-                        <label class="block text-gray-700 mb-2">Tempo no Pula-Pula:</label>
+                        <label class="block text-gray-700 dark:text-gray-300 mb-2">Tempo no Pula-Pula:</label>
                         <div class="flex space-x-4">
-                            <button type="button" id="5min" 
-                                class="flex-1 bg-purple-100 hover:bg-purple-200 text-purple-800 font-medium py-2 px-4 rounded-lg border border-purple-300 transition duration-200">
+                            <button type="button" id="5min"
+                                class="flex-1 bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 text-purple-800 dark:text-purple-300 font-medium py-2 px-4 rounded-lg border border-purple-300 dark:border-purple-700 transition duration-200">
                                 10 minutos - R$ 03,00
                             </button>
-                            <button type="button" id="10min" 
-                                class="flex-1 bg-purple-100 hover:bg-purple-200 text-purple-800 font-medium py-2 px-4 rounded-lg border border-purple-300 transition duration-200">
+                            <button type="button" id="10min"
+                                class="flex-1 bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 text-purple-800 dark:text-purple-300 font-medium py-2 px-4 rounded-lg border border-purple-300 dark:border-purple-700 transition duration-200">
                                 20 minutos - R$ 05,00
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="hidden" id="customTimeSection">
-                        <label for="customTime" class="block text-gray-700 mb-1">Tempo Personalizado (minutos):</label>
-                        <input type="number" id="customTime" min="1" 
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        <label for="customTime" class="block text-gray-700 dark:text-gray-300 mb-1">Tempo Personalizado
+                            (minutos):</label>
+                        <input type="number" id="customTime" min="1"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white">
                     </div>
-                    
+
                     <div>
-                        <label for="paymentMethod" class="block text-gray-700 mb-1">Forma de Pagamento:</label>
-                        <select id="paymentMethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 mb-2">
+                        <label for="paymentMethod" class="block text-gray-700 dark:text-gray-300 mb-1">Forma de
+                            Pagamento:</label>
+                        <select id="paymentMethod"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 mb-2 dark:bg-gray-700 dark:text-white">
                             <option value="cash">Dinheiro</option>
                             <option value="pix">PIX</option>
                             <option value="credit">Cartão de Crédito</option>
                             <option value="debit">Cartão de Débito</option>
                         </select>
+                        <div id="pixQrCodeContainer" class="hidden mt-4 flex justify-center">
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Escaneie o QR Code para pagar:
+                                </p>
+                                <img src="qrcode_pix_rs0.png" alt="QR Code Pix"
+                                    class="w-48 h-48 object-contain border-2 border-gray-200 rounded-lg mx-auto">
+                            </div>
+                        </div>
                     </div>
-                    
+
                     <div>
-                        <label for="amountPaid" class="block text-gray-700 mb-1">Valor Pago (R$):</label>
-                        <input type="number" id="amountPaid" step="0.01" min="0" 
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        <label for="amountPaid" class="block text-gray-700 dark:text-gray-300 mb-1">Valor Pago
+                            (R$):</label>
+                        <input type="number" id="amountPaid" step="0.01" min="0"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white">
                     </div>
-                    
+
                     <div class="pt-2">
-                        <button type="submit" 
+                        <button type="submit"
                             class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md">
                             <i class="fas fa-plus-circle mr-2"></i>Adicionar ao Pula-Pula
                         </button>
                     </div>
                 </form>
-                
-                <div class="mt-6 p-4 bg-gray-50 rounded-lg hidden" id="changeInfo">
-                    <h3 class="font-medium text-gray-800 mb-2">Informações de Pagamento:</h3>
-                    <p class="text-gray-600">Valor Total: R$ <span id="totalAmount">0.00</span></p>
-                    <p class="text-gray-600">Troco: R$ <span id="changeAmount">0.00</span></p>
+
+                <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hidden transition-colors duration-300"
+                    id="changeInfo">
+                    <h3 class="font-medium text-gray-800 dark:text-gray-200 mb-2">Informações de Pagamento:</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Valor Total: R$ <span id="totalAmount">0.00</span></p>
+                    <p class="text-gray-600 dark:text-gray-400">Troco: R$ <span id="changeAmount">0.00</span></p>
                 </div>
             </div>
-            
+
             <!-- Lista de pessoas no pula-pula -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h2 class="text-2xl font-semibold text-purple-700 mb-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-colors duration-300">
+                <h2 class="text-2xl font-semibold text-purple-700 dark:text-purple-400 mb-4">
                     <i class="fas fa-users mr-2"></i>Pessoas no Pula-Pula
                 </h2>
-                
+
                 <div class="mb-4 flex justify-between items-center">
-                    <p class="text-gray-600">Total: <span id="totalPeople" class="font-bold">0</span> pessoa(s)</p>
-                    <p class="text-gray-600">Faturamento: R$ <span id="totalRevenue" class="font-bold">0.00</span></p>
+                    <p class="text-gray-600 dark:text-gray-400">Total: <span id="totalPeople" class="font-bold">0</span>
+                        pessoa(s)</p>
+                    <p class="text-gray-600 dark:text-gray-400">Faturamento: R$ <span id="totalRevenue"
+                            class="font-bold">0.00</span></p>
                 </div>
-                
+
                 <div class="space-y-4" id="peopleList">
-                    <div class="text-center py-8 text-gray-400" id="emptyMessage">
+                    <div class="text-center py-8 text-gray-400 dark:text-gray-500" id="emptyMessage">
                         <i class="fas fa-child text-4xl mb-2"></i>
                         <p>Nenhuma pessoa no pula-pula ainda</p>
                     </div>
@@ -124,8 +223,129 @@
         </div>
     </div>
 
+    <!-- History Modal -->
+    <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 flex items-center justify-center">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-[80vh] flex flex-col m-4">
+            <div class="flex justify-between items-center mb-4 border-b dark:border-gray-700 pb-2">
+                <h2 class="text-2xl font-bold text-purple-800 dark:text-purple-400">Histórico do Dia</h2>
+                <button id="closeHistory"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="flex justify-between items-center mb-4 bg-purple-50 dark:bg-gray-700 p-3 rounded-lg">
+                <p class="text-gray-700 dark:text-gray-300">Total de Pessoas: <span id="historyCount"
+                        class="font-bold">0</span></p>
+                <p class="text-gray-700 dark:text-gray-300">Faturamento Total: R$ <span id="historyRevenue"
+                        class="font-bold">0.00</span></p>
+            </div>
+
+            <div class="overflow-y-auto flex-1 pr-2" id="historyList">
+                <!-- History items will be here -->
+                <p class="text-center text-gray-500 py-4">Nenhum registro hoje.</p>
+            </div>
+
+            <div class="mt-4 pt-2 border-t dark:border-gray-700 text-right">
+                <button id="clearHistory" class="text-red-500 hover:text-red-700 text-sm">Limpar Histórico</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- UX: Dark Mode ---
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const html = document.documentElement;
+
+            // Check local storage or system preference
+            if (localStorage.getItem('darkMode') === 'true' ||
+                (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                html.classList.add('dark');
+                updateDarkModeIcon(true);
+            }
+
+            darkModeToggle.addEventListener('click', () => {
+                html.classList.toggle('dark');
+                const isDark = html.classList.contains('dark');
+                localStorage.setItem('darkMode', isDark);
+                updateDarkModeIcon(isDark);
+            });
+
+            function updateDarkModeIcon(isDark) {
+                const icon = darkModeToggle.querySelector('i');
+                if (isDark) {
+                    icon.classList.remove('fa-moon', 'text-gray-600');
+                    icon.classList.add('fa-sun', 'text-yellow-400');
+                } else {
+                    icon.classList.remove('fa-sun', 'text-yellow-400');
+                    icon.classList.add('fa-moon', 'text-gray-600');
+                }
+            }
+
+            // --- UX: Toast Notifications ---
+            function showToast(message, type = 'success') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+
+                const colors = {
+                    success: 'bg-green-500',
+                    error: 'bg-red-500',
+                    info: 'bg-blue-500',
+                    warning: 'bg-yellow-500'
+                };
+
+                const icons = {
+                    success: 'fa-check-circle',
+                    error: 'fa-exclamation-circle',
+                    info: 'fa-info-circle',
+                    warning: 'fa-exclamation-triangle'
+                };
+
+                toast.className = `${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 toast-enter transform transition-all duration-300`;
+                toast.innerHTML = `
+                    <i class="fas ${icons[type]}"></i>
+                    <span class="font-medium">${message}</span>
+                `;
+
+                container.appendChild(toast);
+
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    toast.classList.remove('toast-enter');
+                    toast.classList.add('toast-exit');
+                    toast.addEventListener('animationend', () => {
+                        toast.remove();
+                    });
+                }, 3000);
+            }
+
+            // --- UX: Audio Alert ---
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            function playSound() {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5
+                oscillator.frequency.exponentialRampToValueAtTime(440, audioContext.currentTime + 0.5); // Drop to A4
+
+                gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.5);
+            }
+
             function getPaymentMethodName(method) {
                 const methods = {
                     'cash': 'Dinheiro',
@@ -135,10 +355,13 @@
                 };
                 return methods[method] || method;
             }
+
             // Variáveis globais
             let people = [];
+            let history = [];
             let totalRevenue = 0;
-            
+            let editingId = null;
+
             // Elementos do formulário
             const form = document.getElementById('personForm');
             const nameInput = document.getElementById('name');
@@ -148,112 +371,303 @@
             const changeInfo = document.getElementById('changeInfo');
             const totalAmountSpan = document.getElementById('totalAmount');
             const changeAmountSpan = document.getElementById('changeAmount');
-            
+            const pixQrCodeContainer = document.getElementById('pixQrCodeContainer');
+            const paymentMethodSelect = document.getElementById('paymentMethod');
+
+            if (paymentMethodSelect) {
+                paymentMethodSelect.addEventListener('change', function () {
+                    if (this.value === 'pix') {
+                        pixQrCodeContainer.classList.remove('hidden');
+                    } else {
+                        pixQrCodeContainer.classList.add('hidden');
+                    }
+                });
+            }
+
             // Elementos da lista
             const peopleList = document.getElementById('peopleList');
             const emptyMessage = document.getElementById('emptyMessage');
             const totalPeopleSpan = document.getElementById('totalPeople');
             const totalRevenueSpan = document.getElementById('totalRevenue');
-            
+
             // Botões de tempo
             const fiveMinBtn = document.getElementById('5min');
             const tenMinBtn = document.getElementById('10min');
-            
+
+            // History Elements
+            const historyBtn = document.getElementById('historyBtn');
+            const historyModal = document.getElementById('historyModal');
+            const closeHistoryBtn = document.getElementById('closeHistory');
+            const historyList = document.getElementById('historyList');
+            const historyCountSpan = document.getElementById('historyCount');
+            const historyRevenueSpan = document.getElementById('historyRevenue');
+            const clearHistoryBtn = document.getElementById('clearHistory');
+
             // Variáveis para controle do tempo selecionado
             let selectedTime = 0;
             let selectedPrice = 0;
-            
+
+            // --- LocalStorage Functions ---
+
+            function saveData() {
+                const dataToSave = people.map(person => {
+                    const p = { ...person };
+                    p.lastSaveTime = Date.now();
+                    p.timer = null;
+                    return p;
+                });
+                localStorage.setItem('pulaPulaData', JSON.stringify(dataToSave));
+                localStorage.setItem('pulaPulaHistory', JSON.stringify(history));
+            }
+
+            function loadData() {
+                const savedData = localStorage.getItem('pulaPulaData');
+                const savedHistory = localStorage.getItem('pulaPulaHistory');
+
+                if (savedHistory) {
+                    try {
+                        history = JSON.parse(savedHistory);
+                    } catch (e) {
+                        console.error("Erro ao carregar histórico", e);
+                    }
+                }
+
+                if (savedData) {
+                    try {
+                        const parsedData = JSON.parse(savedData);
+                        const now = Date.now();
+
+                        people = parsedData.map(person => {
+                            if (!person.isPaused && person.lastSaveTime && person.remainingTime > 0) {
+                                const elapsedSeconds = Math.floor((now - person.lastSaveTime) / 1000);
+                                person.remainingTime -= elapsedSeconds;
+                                if (person.remainingTime < 0) person.remainingTime = 0;
+                            }
+                            person.timer = null;
+                            person.isEditing = false;
+                            return person;
+                        });
+
+                        people.forEach(person => {
+                            if (!person.isPaused && person.remainingTime > 0) {
+                                startTimer(person.id);
+                            }
+                        });
+
+                        updatePeopleList();
+                        calculateRevenue();
+                    } catch (e) {
+                        console.error("Erro ao carregar dados:", e);
+                        localStorage.removeItem('pulaPulaData');
+                    }
+                }
+            }
+
+            // --- History Logic ---
+            function updateHistoryModal() {
+                historyCountSpan.textContent = history.length;
+                const totalHistoryRevenue = history.reduce((sum, item) => sum + item.price, 0);
+                historyRevenueSpan.textContent = totalHistoryRevenue.toFixed(2);
+
+                if (history.length === 0) {
+                    historyList.innerHTML = '<p class="text-center text-gray-500 py-4">Nenhum registro hoje.</p>';
+                    return;
+                }
+
+                // Sort by most recent
+                const sortedHistory = [...history].sort((a, b) => b.timestamp - a.timestamp);
+
+                historyList.innerHTML = sortedHistory.map(item => `
+                    <div class="flex justify-between items-center p-3 border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                        <div>
+                            <p class="font-bold text-gray-800 dark:text-gray-200">${item.name}</p>
+                            <p class="text-xs text-gray-500">${new Date(item.timestamp).toLocaleTimeString()}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-purple-600 dark:text-purple-400 font-bold">R$ ${item.price.toFixed(2)}</p>
+                            <p class="text-xs text-gray-500">${Math.floor(item.totalTime / 60)} min</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            historyBtn.addEventListener('click', () => {
+                updateHistoryModal();
+                historyModal.classList.remove('hidden');
+            });
+
+            closeHistoryBtn.addEventListener('click', () => {
+                historyModal.classList.add('hidden');
+            });
+
+            historyModal.addEventListener('click', (e) => {
+                if (e.target === historyModal) historyModal.classList.add('hidden');
+            });
+
+            clearHistoryBtn.addEventListener('click', () => {
+                if (confirm('Tem certeza que deseja limpar o histórico?')) {
+                    history = [];
+                    saveData();
+                    updateHistoryModal();
+                    showToast('Histórico limpo com sucesso', 'info');
+                }
+            });
+
             // Event listeners para os botões de tempo
-            fiveMinBtn.addEventListener('click', function() {
+            fiveMinBtn.addEventListener('click', function () {
                 selectedTime = 10;
                 selectedPrice = 3;
                 updatePriceDisplay();
                 customTimeSection.classList.add('hidden');
                 fiveMinBtn.classList.add('bg-purple-300', 'border-purple-500');
                 tenMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
+
+                // Dark mode styles
+                fiveMinBtn.classList.add('dark:bg-purple-700', 'dark:border-purple-500');
+                tenMinBtn.classList.remove('dark:bg-purple-700', 'dark:border-purple-500');
             });
-            
-            tenMinBtn.addEventListener('click', function() {
+
+            tenMinBtn.addEventListener('click', function () {
                 selectedTime = 20;
                 selectedPrice = 5;
                 updatePriceDisplay();
                 customTimeSection.classList.add('hidden');
                 tenMinBtn.classList.add('bg-purple-300', 'border-purple-500');
                 fiveMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
+
+                // Dark mode styles
+                tenMinBtn.classList.add('dark:bg-purple-700', 'dark:border-purple-500');
+                fiveMinBtn.classList.remove('dark:bg-purple-700', 'dark:border-purple-500');
             });
-            
+
             // Event listener para o campo de valor pago
             amountPaidInput.addEventListener('input', updatePriceDisplay);
-            
-            // Função para atualizar a exibição do preço e troco
+
             function updatePriceDisplay() {
-                if (selectedTime > 0) {
-                    // Se estiver editando, usar o preço existente como padrão
-                    const editingPerson = people.find(p => p.isEditing);
-                    const basePrice = editingPerson ? editingPerson.price : selectedPrice;
-                    
-                    totalAmountSpan.textContent = basePrice.toFixed(2);
-                    
+                const editingPerson = editingId ? people.find(p => p.id === editingId) : null;
+                let currentPrice = selectedPrice;
+                if (selectedTime === 0 && editingPerson) {
+                    currentPrice = editingPerson.price;
+                }
+
+                if (currentPrice > 0 || selectedTime > 0) {
+                    totalAmountSpan.textContent = currentPrice.toFixed(2);
                     const amountPaid = parseFloat(amountPaidInput.value) || (editingPerson ? editingPerson.amountPaid : 0);
-                    const change = amountPaid - basePrice;
-                    
+                    const change = amountPaid - currentPrice;
                     changeAmountSpan.textContent = change >= 0 ? change.toFixed(2) : '0.00';
                     changeInfo.classList.remove('hidden');
                 }
             }
-            
-            // Event listener para o formulário
-            form.addEventListener('submit', function(e) {
+
+            // Create Cancel Button dynamically
+            const submitBtnContainer = form.querySelector('button[type="submit"]').parentElement;
+            const cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'hidden w-full mt-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white';
+            cancelBtn.innerHTML = '<i class="fas fa-times mr-2"></i>Cancelar Edição';
+            cancelBtn.onclick = cancelEdit;
+            submitBtnContainer.appendChild(cancelBtn);
+
+            function cancelEdit() {
+                editingId = null;
+                people.forEach(p => p.isEditing = false);
+                form.reset();
+
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="fas fa-plus-circle mr-2"></i>Adicionar ao Pula-Pula';
+
+                cancelBtn.classList.add('hidden');
+                changeInfo.classList.add('hidden');
+                fiveMinBtn.classList.remove('bg-purple-300', 'border-purple-500', 'dark:bg-purple-700', 'dark:border-purple-500');
+                tenMinBtn.classList.remove('bg-purple-300', 'border-purple-500', 'dark:bg-purple-700', 'dark:border-purple-500');
+                customTimeSection.classList.add('hidden');
+                if (pixQrCodeContainer) pixQrCodeContainer.classList.add('hidden');
+
+                selectedTime = 0;
+                selectedPrice = 0;
+
+                updatePeopleList();
+            }
+
+            form.addEventListener('submit', function (e) {
                 e.preventDefault();
-                
-                if (selectedTime === 0) {
-                    alert('Por favor, selecione um tempo no pula-pula');
-                    return;
-                }
-                
+
                 const name = nameInput.value.trim();
                 if (!name) {
-                    alert('Por favor, insira um nome');
+                    showToast('Por favor, insira um nome', 'warning');
                     return;
                 }
-                
-                const amountPaid = parseFloat(amountPaidInput.value) || 0;
-                if (amountPaid < selectedPrice) {
-                    alert(`Valor pago insuficiente. O valor mínimo é R$ ${selectedPrice.toFixed(2)}`);
-                    return;
+
+                if (editingId === null) {
+                    if (selectedTime === 0) {
+                        showToast('Por favor, selecione um tempo no pula-pula', 'warning');
+                        return;
+                    }
+
+                    const amountPaid = parseFloat(amountPaidInput.value) || 0;
+                    if (amountPaid < selectedPrice) {
+                        showToast(`Valor pago insuficiente. Mínimo: R$ ${selectedPrice.toFixed(2)}`, 'error');
+                        return;
+                    }
+
+                    const newPerson = {
+                        id: Date.now(),
+                        name: name,
+                        time: selectedTime * 60,
+                        remainingTime: selectedTime * 60,
+                        price: selectedPrice,
+                        paymentMethod: document.getElementById('paymentMethod').value,
+                        amountPaid: amountPaid,
+                        timer: null,
+                        isPaused: true, // FIXED: Start paused so it doesn't auto-start on reload
+                        isEditing: false,
+                        originalPrice: selectedPrice,
+                        lastSaveTime: Date.now()
+                    };
+
+                    people.push(newPerson);
+                    showToast('Pessoa adicionada com sucesso!', 'success');
+                } else {
+                    const personIndex = people.findIndex(p => p.id === editingId);
+                    if (personIndex === -1) {
+                        cancelEdit();
+                        return;
+                    }
+                    const person = people[personIndex];
+
+                    person.name = name;
+                    person.paymentMethod = document.getElementById('paymentMethod').value;
+                    person.amountPaid = parseFloat(amountPaidInput.value) || 0;
+
+                    if (selectedTime > 0) {
+                        person.time = selectedTime * 60;
+                        person.remainingTime = selectedTime * 60;
+                        person.price = selectedPrice;
+                    }
+
+                    person.isEditing = false;
+                    editingId = null;
+
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.innerHTML = '<i class="fas fa-plus-circle mr-2"></i>Adicionar ao Pula-Pula';
+                    cancelBtn.classList.add('hidden');
+                    showToast('Alterações salvas!', 'success');
                 }
-                
-                // Criar nova pessoa
-                const newPerson = {
-                    id: Date.now(),
-                    name: name,
-                    time: selectedTime * 60, // em segundos
-                    remainingTime: selectedTime * 60,
-                    price: selectedPrice,
-                    paymentMethod: document.getElementById('paymentMethod').value,
-                    amountPaid: amountPaid,
-                    timer: null,
-                    isPaused: false,
-                    isEditing: false,
-                    originalPrice: selectedPrice
-                };
-                
-                people.push(newPerson);
+
+                saveData();
                 updatePeopleList();
                 calculateRevenue();
-                calculateRevenue();
-                
-                // Resetar formulário
+
                 form.reset();
                 selectedTime = 0;
                 selectedPrice = 0;
-                fiveMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
-                tenMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
+                fiveMinBtn.classList.remove('bg-purple-300', 'border-purple-500', 'dark:bg-purple-700', 'dark:border-purple-500');
+                tenMinBtn.classList.remove('bg-purple-300', 'border-purple-500', 'dark:bg-purple-700', 'dark:border-purple-500');
                 customTimeSection.classList.add('hidden');
+                if (pixQrCodeContainer) pixQrCodeContainer.classList.add('hidden');
                 changeInfo.classList.add('hidden');
             });
-            
-            // Função para atualizar a lista de pessoas
+
             function updatePeopleList() {
                 if (people.length === 0) {
                     emptyMessage.classList.remove('hidden');
@@ -262,58 +676,72 @@
                     totalPeopleSpan.textContent = '0';
                     return;
                 }
-                
+
+                // --- UX: Sorting ---
+                // Sort by remaining time (ascending) so those ending soonest are first
+                people.sort((a, b) => a.remainingTime - b.remainingTime);
+
                 emptyMessage.classList.add('hidden');
                 totalPeopleSpan.textContent = people.length;
-                
-                // Preserve existing elements to avoid flickering
+
                 const existingElements = {};
                 peopleList.querySelectorAll('[data-id]').forEach(el => {
                     existingElements[el.dataset.id] = el;
                 });
-                
+
                 const fragment = document.createDocumentFragment();
-                
+
                 people.forEach(person => {
                     let personElement = existingElements[person.id];
                     const minutes = Math.floor(person.remainingTime / 60);
                     const seconds = person.remainingTime % 60;
-                    
+
+                    // --- UX: Progress Bar & Color Coding ---
+                    const progressPercent = (person.remainingTime / person.time) * 100;
+                    let progressColor = 'bg-green-500';
+                    if (progressPercent < 20) progressColor = 'bg-red-500';
+                    else if (progressPercent < 50) progressColor = 'bg-yellow-500';
+
                     if (!personElement) {
                         personElement = document.createElement('div');
-                        personElement.className = 'bg-gray-50 rounded-lg p-4 border border-gray-200';
+                        personElement.className = 'bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600 transition-all duration-300';
                         personElement.dataset.id = person.id;
-                    
+
                         personElement.innerHTML = `
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-lg text-purple-800">${person.name}</h3>
-                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">
+                            <h3 class="font-bold text-lg text-purple-800 dark:text-purple-300 person-name"></h3>
+                            <span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-1 rounded text-sm">
                                 R$ ${person.price.toFixed(2)}
                             </span>
                         </div>
                         
+                        <!-- Progress Bar Container -->
+                        <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mb-3">
+                            <div class="progress-bar h-2.5 rounded-full transition-all duration-1000 ease-linear" style="width: 100%"></div>
+                        </div>
+
                         <div class="flex items-center justify-between mb-3">
-                            <div class="timer-display text-2xl font-mono">
+                            <div class="timer-display text-2xl font-mono dark:text-white">
                                 ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}
                             </div>
                             
                             <div class="flex space-x-2">
-                                <button class="timer-control px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition" data-action="start">
+                                <button class="timer-control px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition" data-action="start" title="Iniciar">
                                     <i class="fas fa-play"></i>
                                 </button>
-                                <button class="timer-control px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition" data-action="pause">
+                                <button class="timer-control px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition" data-action="pause" title="Pausar">
                                     <i class="fas fa-pause"></i>
                                 </button>
-                                <button class="add-time px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition" data-minutes="10">
-                                    +10 min
+                                <button class="add-time px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition" data-minutes="10" title="+10 Minutos">
+                                    +10
                                 </button>
-                                <button class="remove-person px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">
+                                <button type="button" class="remove-person px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition" title="Remover">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
                         </div>
                         
-                        <div class="text-sm text-gray-600">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
                             <p>Pago: R$ ${person.amountPaid.toFixed(2)} (${getPaymentMethodName(person.paymentMethod)}) | Troco: R$ ${(person.amountPaid - person.price).toFixed(2)}</p>
                         </div>
                         <div class="flex justify-end mt-2">
@@ -322,64 +750,80 @@
                             </button>
                         </div>
                     `;
-                    
-                        // Adicionar event listeners aos botões
+                        personElement.querySelector('.person-name').textContent = person.name;
+
+                        // Event Listeners
                         const timerControlBtns = personElement.querySelectorAll('.timer-control');
                         timerControlBtns.forEach(btn => {
-                            btn.addEventListener('click', function() {
+                            btn.addEventListener('click', function () {
                                 const action = this.dataset.action;
                                 handleTimerControl(person.id, action);
                             });
                         });
-                        
+
                         const addTimeBtn = personElement.querySelector('.add-time');
-                        addTimeBtn.addEventListener('click', function() {
+                        addTimeBtn.addEventListener('click', function () {
                             const minutesToAdd = parseInt(this.dataset.minutes);
                             addTime(person.id, minutesToAdd);
                         });
-                        
+
                         const removeBtn = personElement.querySelector('.remove-person');
-                        removeBtn.addEventListener('click', function() {
+                        removeBtn.addEventListener('click', function () {
                             removePerson(person.id);
                         });
-                        
+
                         const editBtn = personElement.querySelector('.edit-person');
-                        editBtn.addEventListener('click', function() {
+                        editBtn.addEventListener('click', function () {
                             editPerson(person.id);
                         });
-                        
-                        // Se o timer já estiver rodando, continuar a contagem
+
                         if (person.timer !== null && !person.isPaused) {
                             startTimer(person.id);
                         }
                     } else {
-                        // Just update the timer display for existing elements
+                        // Update existing
                         const timerDisplay = personElement.querySelector('.timer-display');
                         if (timerDisplay) {
                             timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                         }
-                        
-                        // Update payment info
+
                         const paymentInfo = personElement.querySelector('.text-sm');
                         if (paymentInfo) {
-                            paymentInfo.innerHTML = `<p>Pago: R$ ${person.amountPaid.toFixed(2)} | Troco: R$ ${(person.amountPaid - person.price).toFixed(2)}</p>`;
+                            paymentInfo.innerHTML = `<p>Pago: R$ ${person.amountPaid.toFixed(2)} (${getPaymentMethodName(person.paymentMethod)}) | Troco: R$ ${(person.amountPaid - person.price).toFixed(2)}</p>`;
+                        }
+
+                        const nameEl = personElement.querySelector('.person-name');
+                        if (nameEl && nameEl.textContent !== person.name) {
+                            nameEl.textContent = person.name;
+                        }
+
+                        if (person.isEditing) {
+                            personElement.classList.add('ring-2', 'ring-purple-500');
+                        } else {
+                            personElement.classList.remove('ring-2', 'ring-purple-500');
                         }
                     }
-                    
+
+                    // Update Progress Bar
+                    const progressBar = personElement.querySelector('.progress-bar');
+                    if (progressBar) {
+                        progressBar.style.width = `${progressPercent}%`;
+                        progressBar.className = `progress-bar h-2.5 rounded-full transition-all duration-1000 ease-linear ${progressColor}`;
+                    }
+
                     fragment.appendChild(personElement);
                 });
-                
+
                 peopleList.innerHTML = '';
                 peopleList.appendChild(fragment);
             }
-            
-            // Função para controlar o timer (iniciar/pausar)
+
             function handleTimerControl(id, action) {
                 const personIndex = people.findIndex(p => p.id === id);
                 if (personIndex === -1) return;
-                
+
                 const person = people[personIndex];
-                
+
                 if (action === 'start') {
                     if (person.timer === null || person.isPaused) {
                         startTimer(id);
@@ -391,152 +835,157 @@
                         person.isPaused = true;
                     }
                 }
-                
+
+                saveData();
                 updatePeopleList();
             }
-            
-            // Função para iniciar o timer
+
             function startTimer(id) {
                 const personIndex = people.findIndex(p => p.id === id);
                 if (personIndex === -1) return;
-                
+
                 const person = people[personIndex];
-                
+
                 if (person.timer !== null) {
                     clearInterval(person.timer);
                 }
-                
+
                 person.timer = setInterval(() => {
                     person.remainingTime--;
-                    
+
+                    if (person.remainingTime % 5 === 0) {
+                        saveData();
+                    }
+
                     if (person.remainingTime <= 0) {
                         clearInterval(person.timer);
                         person.timer = null;
                         person.remainingTime = 0;
-                        
-                        // Adicionar efeito visual quando o tempo acabar
+                        saveData();
+
                         const personElement = document.querySelector(`[data-id="${id}"]`);
                         if (personElement) {
-                            personElement.classList.add('pulse', 'bg-red-100');
+                            personElement.classList.add('pulse', 'bg-red-100', 'dark:bg-red-900/30');
                         }
+
+                        // --- UX: Audio Alert ---
+                        playSound();
+                        showToast(`Tempo esgotado para ${person.name}!`, 'warning');
                     }
-                    
+
                     updatePeopleList();
                 }, 1000);
             }
-            
-            // Função para adicionar tempo
+
             function addTime(id, minutes) {
                 const personIndex = people.findIndex(p => p.id === id);
                 if (personIndex === -1) return;
-                
+
                 const person = people[personIndex];
                 const secondsToAdd = minutes * 60;
-                
+
                 person.remainingTime += secondsToAdd;
                 person.time += secondsToAdd;
-                
-                // Atualizar preço
+
                 if (minutes === 5) {
                     person.price += 10;
                 } else if (minutes === 10) {
                     person.price += 15;
                 }
-                
+
+                saveData();
                 updatePeopleList();
+                showToast(`+${minutes} minutos adicionados para ${person.name}`, 'success');
             }
-            
-            // Função para editar pessoa
+
             function editPerson(id) {
+                people.forEach(p => p.isEditing = false);
+
                 const personIndex = people.findIndex(p => p.id === id);
                 if (personIndex === -1) return;
-                
+
                 const person = people[personIndex];
                 person.isEditing = true;
-                
-                // Preencher formulário com dados da pessoa
+                editingId = id;
+
+                cancelBtn.classList.remove('hidden');
+
                 nameInput.value = person.name;
                 amountPaidInput.value = person.amountPaid;
                 document.getElementById('paymentMethod').value = person.paymentMethod;
-                
-                // Configurar tempo selecionado
-                if (person.time === 300) {
-                    fiveMinBtn.click();
-                } else if (person.time === 600) {
-                    tenMinBtn.click();
+
+                fiveMinBtn.classList.remove('bg-purple-300', 'border-purple-500', 'dark:bg-purple-700', 'dark:border-purple-500');
+                tenMinBtn.classList.remove('bg-purple-300', 'border-purple-500', 'dark:bg-purple-700', 'dark:border-purple-500');
+                customTimeSection.classList.add('hidden');
+
+                selectedTime = 0;
+                selectedPrice = 0;
+
+                if (person.time === 600) {
+                    fiveMinBtn.classList.add('bg-purple-300', 'border-purple-500', 'dark:bg-purple-700', 'dark:border-purple-500');
+                } else if (person.time === 1200) {
+                    tenMinBtn.classList.add('bg-purple-300', 'border-purple-500', 'dark:bg-purple-700', 'dark:border-purple-500');
                 } else {
                     customTimeSection.classList.remove('hidden');
                     customTimeInput.value = person.time / 60;
-                    selectedTime = person.time / 60;
-                    selectedPrice = person.price;
                 }
-                
-                // Atualizar exibição de preço
+
                 updatePriceDisplay();
-                
-                // Alterar texto do botão de submit
+
                 const submitBtn = form.querySelector('button[type="submit"]');
                 submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Alterações';
-                
-                // Atualizar a pessoa existente quando salvar
-                form.onsubmit = function(e) {
-                    e.preventDefault();
-                    
+
+                updatePeopleList();
+            }
+
+            function removePerson(id) {
+                if (!confirm("Tem certeza que deseja remover esta pessoa?")) return;
+
+                try {
+                    if (editingId === id) {
+                        cancelEdit();
+                    }
+
                     const personIndex = people.findIndex(p => p.id === id);
                     if (personIndex === -1) return;
-                    
-                    const person = people[personIndex];
-                    
-                    // Atualizar dados da pessoa
-                    person.name = nameInput.value.trim();
-                    person.time = selectedTime * 60;
-                    person.remainingTime = selectedTime * 60;
-                    person.price = selectedPrice;
-                    person.paymentMethod = document.getElementById('paymentMethod').value;
-                    person.amountPaid = parseFloat(amountPaidInput.value) || 0;
-                    
-                    // Resetar formulário
-                    form.reset();
-                    this.onsubmit = originalSubmitHandler;
-                    submitBtn.innerHTML = '<i class="fas fa-plus-circle mr-2"></i>Adicionar ao Pula-Pula';
-                    changeInfo.classList.add('hidden');
-                    fiveMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
-                    tenMinBtn.classList.remove('bg-purple-300', 'border-purple-500');
-                    customTimeSection.classList.add('hidden');
-                    
+
+                    if (people[personIndex].timer !== null) {
+                        clearInterval(people[personIndex].timer);
+                    }
+
+                    // --- UX: Add to History ---
+                    const removedPerson = people[personIndex];
+                    if (!Array.isArray(history)) history = []; // Safety check
+                    history.push({
+                        name: removedPerson.name,
+                        price: removedPerson.price,
+                        totalTime: removedPerson.time,
+                        timestamp: Date.now()
+                    });
+
+                    people.splice(personIndex, 1);
+                    saveData();
                     updatePeopleList();
                     calculateRevenue();
-                };
-            }
-            
-            // Salvar handler original do formulário
-            const originalSubmitHandler = form.onsubmit;
-            
-            // Função para remover pessoa
-            function removePerson(id) {
-                const personIndex = people.findIndex(p => p.id === id);
-                if (personIndex === -1) return;
-                
-                const person = people[personIndex];
-                
-                if (person.timer !== null) {
-                    clearInterval(person.timer);
+                    showToast('Pessoa removida com sucesso', 'info');
+                } catch (e) {
+                    console.error("Erro ao remover pessoa:", e);
+                    showToast('Erro ao remover pessoa. Tente recarregar a página.', 'error');
                 }
-                
-                people.splice(personIndex, 1);
-                updatePeopleList();
-                calculateRevenue();
             }
-            
-            // Função para calcular o faturamento total
+
             function calculateRevenue() {
                 totalRevenue = people.reduce((sum, person) => sum + person.price, 0);
                 totalRevenueSpan.textContent = totalRevenue.toFixed(2);
             }
-            
-            // Inicialização
-            updatePeopleList();
+
+            window.addEventListener('beforeunload', () => {
+                saveData();
+            });
+
+            loadData();
         });
     </script>
 </body>
+
 </html>
